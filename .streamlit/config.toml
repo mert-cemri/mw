@@ -1,0 +1,16 @@
+[server]
+port = 9000
+address = "0.0.0.0"
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+enableWebsocketCompression = false
+allowRunOnSave = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 9000
+
+[global]
+developmentMode = false
