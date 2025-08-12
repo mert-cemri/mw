@@ -36,7 +36,7 @@ class MASTLLMJudge:
     def _load_definitions(self) -> str:
         """Load taxonomy definitions."""
         # Try to load from the original path relative to the main repo
-        definitions_path = "/Users/mertcemri/Desktop/research/mast_website/MAST/taxonomy_definitions_examples/definitions.txt"
+        definitions_path = "taxonomy_definitions_examples/definitions.txt"
         
         if os.path.exists(definitions_path):
             try:
@@ -71,7 +71,7 @@ MAST Taxonomy Definitions:
     def _load_examples(self) -> str:
         """Load taxonomy examples."""
         # Try to load from the original path
-        examples_path = "/Users/mertcemri/Desktop/research/mast_website/MAST/taxonomy_definitions_examples/examples.txt"
+        examples_path = "taxonomy_definitions_examples/examples.txt"
         
         if os.path.exists(examples_path):
             try:
