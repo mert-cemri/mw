@@ -127,7 +127,14 @@ def compute_distribution(
             total_failures=sum(DEMO_COUNTS.values())
         )
     elif isinstance(data, dict):
-        if 'failure_labels' in data:
+        if 'distribution' in data:
+            # Handle AnnotationResult format
+            if isinstance(data['distribution'], dict) and 'counts' in data['distribution']:
+                counts.update(data['distribution']['counts'])
+            else:
+                # Distribution object with counts attribute
+                counts.update(data['distribution'].counts)
+        elif 'failure_labels' in data:
             failure_labels = data['failure_labels']
         elif 'counts' in data:
             # Pre-aggregated counts

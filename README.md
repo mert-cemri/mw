@@ -2,6 +2,46 @@
 
 A flexible web application for analyzing multi-agent interaction traces using the MAST (Multi-Agent Systems Taxonomy) framework with LLM-as-a-Judge capabilities.
 
+## CLI Interface
+
+### Quick Start with CLI Dashboard
+
+Analyze a single trace file using the command-line interface:
+
+```bash
+# Basic usage
+python agent_dash.py --trace_file sample_trace.txt
+
+# Specify custom port
+python agent_dash.py --trace_file sample_trace.txt --port 8080
+
+# Don't open browser automatically
+python agent_dash.py --trace_file sample_trace.txt --no-browser
+```
+
+The CLI will:
+1. Load your trace file
+2. Launch a local web dashboard at http://localhost:8501 (or print to terminal with --no-browser)
+3. Provide LLM-based analysis of failure modes
+4. Show visualizations and allow result export
+
+**Terminal Mode (NEW):**
+```bash
+# Print results directly to terminal
+python agent_dash.py --trace_file sample_trace.txt --no-browser
+
+# Export results to JSON
+python agent_dash.py --trace_file sample_trace.txt --no-browser --export json
+
+# Export results to CSV
+python agent_dash.py --trace_file sample_trace.txt --no-browser --export csv
+```
+
+**Requirements:**
+- Set `OPENAI_API_KEY` environment variable for LLM analysis
+- Or run without API key for mock analysis
+- Install `rich` for enhanced terminal output: `pip install rich`
+
 ## Key Features
 
 - **🔄 Flexible File Support**: Upload ANY file format (JSON, TXT, CSV, ZIP, etc.)

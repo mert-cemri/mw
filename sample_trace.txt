@@ -1,0 +1,55 @@
+User: I need help planning a trip to Paris for 3 days.
+
+Agent1: I'll help you plan your Paris trip! Let me start by asking some questions about your preferences.
+
+Agent2: I can assist with finding hotels and restaurants in Paris.
+
+Agent3: I'll handle the itinerary and tourist attractions.
+
+Agent1: What's your budget for the trip?
+
+User: Around $2000 per person, excluding flights.
+
+Agent2: For that budget, I recommend staying in the Marais district. There are excellent boutique hotels.
+
+Agent3: Day 1: Visit the Eiffel Tower and Louvre Museum.
+
+Agent1: Wait, I haven't finished gathering requirements. When are you planning to travel?
+
+Agent2: I found Hotel des Deux-Iles for $180/night. Should I book it?
+
+User: We're traveling next month, from the 15th to 18th.
+
+Agent3: Day 2: Notre Dame and Latin Quarter walking tour.
+
+Agent1: Hold on, we need to coordinate. Agent2, don't book anything yet.
+
+Agent2: I already started the booking process...
+
+Agent3: Day 3: Versailles day trip.
+
+Agent1: This is getting chaotic. Let me restart the planning process.
+
+User: No, please don't start over. Just give me the recommendations.
+
+Agent2: The hotel is now showing as unavailable. Let me search again.
+
+Agent3: Actually, Notre Dame is under construction. Let me revise Day 2.
+
+Agent1: I think we should verify all the information before presenting it.
+
+Agent2: I found another hotel but it's $250/night, over budget.
+
+Agent3: Never mind about the verification, here's the final itinerary.
+
+User: This is confusing. Can someone just give me a clear plan?
+
+Agent1: Let me summarize... actually, I don't have all the information.
+
+Agent2: I'll just book the expensive hotel then.
+
+Agent3: The itinerary is complete. Enjoy your trip!
+
+Agent1: Wait, we never asked about their interests or mobility needs.
+
+User: Forget it, I'll plan it myself.
