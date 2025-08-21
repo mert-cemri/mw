@@ -26,4 +26,7 @@ pytest-asyncio==0.21.1
 httpx==0.25.2
 
 # CLI Interface
-rich==13.7.0huggingface_hub
+rich==13.7.0
+
+# Hugging Face dataset support
+huggingface_hub
