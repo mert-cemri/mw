@@ -48,8 +48,12 @@ class MASTRenderer:
         self.height_px = height_px
         self.debug_mode = debug_mode
         
-        # Font configuration
+        # Font configuration for crisp rendering (use commonly available fonts)
         self.font_family = ['Helvetica Neue', 'Arial', 'DejaVu Sans', 'sans-serif']
+        
+        # Enhanced text rendering settings
+        self.text_antialias = True
+        self.text_rasterized = False
         
         # Pre-compute layouts
         self.category_layout = self.layout.layout_categories()
@@ -73,18 +77,31 @@ class MASTRenderer:
         Returns:
             matplotlib Figure
         """
-        # Create figure with high DPI
+        # Create figure with enhanced settings for crisp rendering
         fig, ax = plt.subplots(
             figsize=(self.width_px/100, self.height_px/100),
             dpi=300
         )
         
-        # Configure axes
+        # Configure matplotlib for maximum crispness
+        plt.rcParams['font.family'] = self.font_family
+        plt.rcParams['text.antialiased'] = True
+        plt.rcParams['path.simplify'] = False
+        plt.rcParams['agg.path.chunksize'] = 0  # Disable path chunking for crisp paths
+        plt.rcParams['font.weight'] = 'normal'  # Ensure consistent font weight
+        plt.rcParams['font.stretch'] = 'normal'  # Ensure normal font stretch
+        plt.rcParams['text.usetex'] = False  # Ensure no LaTeX rendering issues
+        
+        # Configure axes with crisp settings
         ax.set_xlim(0, self.width_px)
         ax.set_ylim(0, self.height_px)
         ax.invert_yaxis()
         ax.axis('off')
         fig.patch.set_facecolor('white')
+        ax.set_facecolor('white')
+        
+        # Ensure pixel-perfect alignment
+        ax.set_aspect('equal', adjustable='box')
         
         # Draw components
         self._draw_header(ax)
@@ -120,15 +137,17 @@ class MASTRenderer:
     
     def _draw_header(self, ax: plt.Axes):
         """Draw main header title (Rev5 final)."""
-        # Row 1: Main title
+        # Row 1: Main title with enhanced styling
         header_y = self.layout.top_header * 0.30
         ax.text(
             self.width_px / 2, header_y,
             "Inter-Agent Conversation Stages",
-            ha='center', 
-            fontsize=40, weight='bold',  # Rev5: 40px
-            color='#333333',  # Rev5: Darker text
-            family=self.font_family
+            ha='center', va='center',
+            fontsize=42, weight='600',  # Enhanced: slightly larger, medium-bold
+            color='#1a1a1a',  # Enhanced: darker for better contrast
+            family=self.font_family,
+            rasterized=self.text_rasterized,
+            antialiased=self.text_antialias
         )
     
     def _draw_stage_pills(self, ax: plt.Axes):
@@ -140,50 +159,57 @@ class MASTRenderer:
         }
         
         for stage_id, pos in self.pill_positions.items():
-            # Draw pill background
+            # Draw pill background with enhanced styling
             pill_width = pos['x1'] - pos['x0']
             pill_rect = patches.FancyBboxPatch(
                 (pos['x0'], pos['y'] - pos['height']/2),
                 pill_width, pos['height'],
-                boxstyle="round,pad=0,rounding_size=20",
+                boxstyle="round,pad=0,rounding_size=18",  # Slightly smaller radius for cleaner look
                 facecolor=STAGE_COLORS[stage_id],
-                edgecolor=UI_COLORS['pill_stroke'],
-                linewidth=1
+                edgecolor='#e0e0e0',  # Softer border color
+                linewidth=1.5,  # Slightly thicker border for definition
+                alpha=0.95  # Subtle transparency for modern look
             )
             ax.add_patch(pill_rect)
             
-            # Draw pill text
+            # Draw pill text with enhanced styling
             ax.text(
                 pos['center_x'], pos['center_y']- pos['height']/4,
                 stage_labels[stage_id],
-                ha='center',
-                fontsize=20, weight='medium',
-                color=UI_COLORS['pill_text'],
-                family=self.font_family
+                ha='center', va='center',
+                fontsize=21, weight='500',  # Enhanced: slightly larger, medium weight
+                color='#2d2d2d',  # Enhanced: darker text for better contrast
+                family=self.font_family,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
     
     def _draw_header_labels(self, ax: plt.Axes):
         """Draw header labels and separator line (Rev3 refinements)."""
         label_y = self.layout.chart_y0 - 28  # Adjusted for Rev3
         
-        # Left label
+        # Left label with enhanced styling
         ax.text(
             self.layout.chart_x0 - 20, label_y,
             "Failure Categories",
             ha='right', va='center',
-            fontsize=24, weight='bold',
-            color=UI_COLORS['section_text'],
-            family=self.font_family
+            fontsize=26, weight='600',  # Enhanced: larger, semi-bold
+            color='#1a1a1a',  # Enhanced: darker for better contrast
+            family=self.font_family,
+            rasterized=self.text_rasterized,
+            antialiased=self.text_antialias
         )
         
-        # Right label (centered above chart)
+        # Right label (centered above chart) with enhanced styling
         ax.text(
             (self.layout.chart_x0 + self.layout.chart_x1) / 2, label_y,
             "Failure Modes",
             ha='center', va='center',
-            fontsize=24, weight='bold',
-            color=UI_COLORS['section_text'],
-            family=self.font_family
+            fontsize=26, weight='600',  # Enhanced: larger, semi-bold
+            color='#1a1a1a',  # Enhanced: darker for better contrast
+            family=self.font_family,
+            rasterized=self.text_rasterized,
+            antialiased=self.text_antialias
         )
         
         # Separator line (Rev3 refinements)
@@ -213,37 +239,43 @@ class MASTRenderer:
             # Position title at top of block
             title_y = cat_layout['mid'] - block_height / 2 + title_font_size * 0.35
             
-            # Category title (Rev5: 38px bold)
+            # Category title with enhanced styling
             ax.text(
                 label_x, title_y,
                 category.name,
                 ha='right', va='center',
-                fontsize=title_font_size, weight='bold',
+                fontsize=title_font_size, weight='700',  # Enhanced: bolder for better hierarchy
                 color=colors.text_dark,
-                alpha=0.95,  # Slight transparency for layering
-                family=self.font_family
+                alpha=1.0,  # Enhanced: full opacity for crisp text
+                family=self.font_family,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
             
-            # Category sublabel (Rev5: 22px italic with better separation)
+            # Category sublabel with enhanced styling
             sublabel_y = title_y + gap
             ax.text(
                 label_x, sublabel_y,
                 f"({category.sublabel})",
                 ha='right', va='center',
-                fontsize=sublabel_font_size, style='italic',
-                color="#888888",  # Rev5: ~#888 but direct color
-                family=self.font_family
+                fontsize=sublabel_font_size, style='normal', weight='400',  # Enhanced: normal style, light weight
+                color="#666666",  # Enhanced: slightly darker for better readability
+                family=self.font_family,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
             
-            # Colored vertical tick (Rev5: positioned inside chart, full height)
+            # Colored vertical tick with enhanced styling
             tick_x = self.layout.chart_x0 - 4  # Just inside chart boundary
-            tick_stroke = 4  # Rev5: 4px stroke
+            tick_stroke = 4  # Enhanced: keep 4px for visibility
             
             ax.plot(
                 [tick_x, tick_x], [cat_layout['top'], cat_layout['bottom']],
                 color=colors.stroke,
                 linewidth=tick_stroke,
-                solid_capstyle='round'  # Rev5: rounded ends
+                solid_capstyle='round',  # Enhanced: rounded ends for modern look
+                alpha=0.9,  # Enhanced: subtle transparency
+                antialiased=True
             )
             
             # Category total percentage (Rev5: dynamic positioning)
@@ -266,9 +298,11 @@ class MASTRenderer:
                 cat_pct_x, cat_layout['mid'],
                 pct_text,
                 ha='left', va='center',
-                fontsize=pct_font_size, weight='bold',
+                fontsize=pct_font_size, weight='700',  # Enhanced: bolder for emphasis
                 color=colors.stroke,
-                family=self.font_family
+                family=self.font_family,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
     
     def _draw_modes(self, ax: plt.Axes, distribution: Distribution, show_zero_modes: bool, mode_data: Dict[str, Dict]):
@@ -301,14 +335,17 @@ class MASTRenderer:
                     stroke_color = colors.stroke
                     text_alpha = 1.0
                 
-                # Draw bar (Rev5: 10px corner radius, 2px stroke)
+                # Draw bar with enhanced styling
                 bar_rect = patches.FancyBboxPatch(
                     (bar_x0, bar_y),
                     bar_x1 - bar_x0, bar_height,
-                    boxstyle="round,pad=0,rounding_size=10",  # Rev5: 10px corner radius
+                    boxstyle="round,pad=0,rounding_size=8",  # Enhanced: slightly smaller radius for cleaner look
                     facecolor=self._rgba_to_matplotlib(fill_color),
                     edgecolor=stroke_color,
-                    linewidth=2  # Rev5: 2px stroke width
+                    linewidth=1.5,  # Enhanced: thinner border for cleaner appearance
+                    alpha=0.95,  # Enhanced: subtle transparency for modern look
+                    capstyle='round',  # Enhanced: rounded line caps
+                    joinstyle='round'  # Enhanced: rounded line joins
                 )
                 ax.add_patch(bar_rect)
                 
@@ -367,68 +404,76 @@ class MASTRenderer:
         max_text_x = min(bar_x1 - self.layout.mode_text_pad_px, self.layout.chart_x1_clip)
         
         if wrap_info['strategy'] == 'single_line':
-            # Single line text
+            # Single line text with enhanced styling
             ax.text(
                 text_x, text_y,
                 wrap_info['lines'][0],
                 ha='left', va='center',
-                fontsize=wrap_info['font_size'], weight='medium',
+                fontsize=wrap_info['font_size'], weight='500',  # Enhanced: medium weight
                 color=text_color,
                 alpha=alpha,
                 family=self.font_family,
-                clip_on=True
+                clip_on=True,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
         elif wrap_info['strategy'] == 'two_line':
             # Two line text with vertical spacing
             line_spacing = wrap_info['font_size'] * 1.10  # 1.10em spacing
             
-            # Line 1: mode label
+            # Line 1: mode label with enhanced styling
             ax.text(
                 text_x, text_y - line_spacing/2,
                 wrap_info['lines'][0],
                 ha='left', va='center',
-                fontsize=wrap_info['font_size'], weight='medium',  # 22px
+                fontsize=wrap_info['font_size'], weight='500',  # Enhanced: medium weight
                 color=text_color,
                 alpha=alpha,
                 family=self.font_family,
-                clip_on=True
+                clip_on=True,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
             
-            # Line 2: percentage
+            # Line 2: percentage with enhanced styling
             ax.text(
                 text_x, text_y + line_spacing/2,
                 wrap_info['lines'][1],
                 ha='left', va='center',
-                fontsize=wrap_info.get('line2_font_size', 20), weight='medium',  # 20px
+                fontsize=wrap_info.get('line2_font_size', 20), weight='600',  # Enhanced: semi-bold for percentages
                 color=text_color,
                 alpha=alpha,
                 family=self.font_family,
-                clip_on=True
+                clip_on=True,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
         else:  # scaled_single_line
-            # Scaled single line
+            # Scaled single line with enhanced styling
             ax.text(
                 text_x, text_y,
                 wrap_info['lines'][0],
                 ha='left', va='center',
-                fontsize=wrap_info['font_size'], weight='medium',
+                fontsize=wrap_info['font_size'], weight='500',  # Enhanced: medium weight
                 color=text_color,
                 alpha=alpha,
                 family=self.font_family,
-                clip_on=True
+                clip_on=True,
+                rasterized=self.text_rasterized,
+                antialiased=self.text_antialias
             )
     
     def _draw_separators(self, ax: plt.Axes):
-        """Draw dashed separator lines between categories (Rev5 final)."""
+        """Draw enhanced separator lines between categories."""
         for sep_y in self.category_layout['separators']:
             ax.plot(
                 [0, self.width_px],  # Full width
                 [sep_y, sep_y],
-                color='#D9D9D9',  # Rev5: lighter color
-                linewidth=1.5,  # Rev5: 1.5px width
-                linestyle='--',
-                dashes=(5, 5),  # Rev5: (5,5) dash pattern
-                alpha=0.6  # Rev5: subtle fade
+                color='#e8e8e8',  # Enhanced: softer color
+                linewidth=1.0,  # Enhanced: thinner for cleaner look
+                linestyle='-',  # Enhanced: solid line for cleaner appearance
+                alpha=0.4,  # Enhanced: more subtle
+                antialiased=True
             )
     
     def _rgba_to_matplotlib(self, rgba_str: str) -> Tuple[float, float, float, float]:

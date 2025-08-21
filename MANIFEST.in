@@ -1,0 +1,24 @@
+# Include the README file
+include README-agentdash.md
+
+# Include requirements files
+include agentdash-requirements.txt
+
+# Include license file
+include LICENSE
+
+# Include any data files in the agentdash package
+recursive-include agentdash *.txt
+recursive-include agentdash *.md
+
+# Exclude test files and cache
+recursive-exclude tests *
+recursive-exclude agentdash __pycache__
+recursive-exclude agentdash *.py[co]
+
+# Exclude old mast package files
+recursive-exclude mast *
+
+# Exclude development files
+exclude test_*.py
+exclude .gitignore

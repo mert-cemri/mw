@@ -13,12 +13,12 @@ class StageSpan(NamedTuple):
 
 
 class LayoutMetrics(NamedTuple):
-    """Layout configuration (Rev6 fixes)."""
-    row_h: int = 45  # Further reduced to fit all categories within bounds
-    row_inner_pad: int = 10  # Slightly reduced padding
-    intra_row_gap: int = 14  # Further reduced gap between modes
-    category_gap: int = 55  # Further reduced gap between categories to fit all content
-    dash_line_yoff: int = 30
+    """Layout configuration (Enhanced for better spacing)."""
+    row_h: int = 48  # Enhanced: slightly larger for better text spacing
+    row_inner_pad: int = 12  # Enhanced: more padding for cleaner look
+    intra_row_gap: int = 16  # Enhanced: more gap between modes
+    category_gap: int = 58  # Enhanced: slightly larger gap for better separation
+    dash_line_yoff: int = 32
 
 
 class CanvasLayout:
@@ -66,11 +66,11 @@ class CanvasLayout:
         self.cat_pct_font_base_px = cat_pct_font_base_px
         self.cat_pct_font_min_px = cat_pct_font_min_px
         
-        # Gutters (Rev6 fixes)
-        self.left_gutter = 340
-        self.right_gutter = 320  # Big enough for wide % text
-        self.top_header = 140  # Further reduced to give more space for content
-        self.bottom_margin = 40  # Further reduced to give more space for content
+        # Gutters (Enhanced for better spacing)
+        self.left_gutter = 350  # Enhanced: slightly more space for labels
+        self.right_gutter = 330  # Enhanced: more space for percentage text
+        self.top_header = 150   # Enhanced: more space for header
+        self.bottom_margin = 50  # Enhanced: more bottom margin
         
         # Chart region (Rev6 fixes)
         self.chart_x0 = self.left_gutter

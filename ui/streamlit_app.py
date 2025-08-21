@@ -65,9 +65,23 @@ def annotate_files(files: List) -> Optional[Dict]:
         return None
 
 
-def annotate_text(text: str, filename: str = "pasted_trace.txt") -> Optional[Dict]:
-    """Send text to annotation API."""
+def annotate_text(text: str, filename: str = "pasted_trace.txt", precomputed_annotation: Optional[Dict] = None) -> Optional[Dict]:
+    """Send text to annotation API or use precomputed annotation."""
     try:
+        # If we have a precomputed annotation, use it directly
+        if precomputed_annotation is not None:
+            # Format the response to match what the API would return
+            return {
+                "job_id": "precomputed_demo",
+                "status": "completed",
+                "result": {
+                    "failure_modes": precomputed_annotation,
+                    "summary": f"Precomputed annotation from MAD dataset for {filename}",
+                    "trace_files": [filename]
+                }
+            }
+        
+        # Otherwise, send to API for real annotation
         response = requests.post(
             f"{API_URL}/annotate-text",
             json={"text": text, "filename": filename}
@@ -80,64 +94,58 @@ def annotate_text(text: str, filename: str = "pasted_trace.txt") -> Optional[Dic
 
 
 def get_random_demo_trace() -> Optional[Dict]:
-    """Get a random demo trace from the research dataset."""
+    """Get a random demo trace from the Hugging Face dataset."""
     import random
-    import os
-    from pathlib import Path
+    from huggingface_hub import hf_hub_download
+    import json
     
     try:
-        # Define trace file paths from the research dataset
-        trace_directories = [
-            "../traces/AG2",
-            "../traces/AppWorld", 
-            "../traces/HyperAgent",
-            "../traces/OpenManus_GAIA",
-            "data/sample_traces"
-        ]
+        # Load the dataset from Hugging Face
+        REPO_ID = "mcemri/MAD"
+        FILENAME = "MAD_full_dataset.json"
         
-        # Collect available trace files
-        available_traces = []
+        # Check if we have the dataset cached in session state
+        if 'mad_dataset' not in st.session_state:
+            file_path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME, repo_type="dataset")
+            with open(file_path, "r") as f:
+                data = json.load(f)
+            
+            # Convert to pandas DataFrame
+            df = pd.DataFrame(data)
+            
+            # Select 5 specific samples with diverse characteristics
+            # Using indices: 42, 156, 378, 521, 890
+            selected_indices = [42, 156, 378, 521, 890]
+            selected_samples = df.iloc[selected_indices].to_dict('records')
+            
+            st.session_state.mad_dataset = selected_samples
+            st.session_state.selected_indices = selected_indices
+            
+            logger.info(f"Loaded MAD dataset with {len(df)} records. Selected indices: {selected_indices}")
         
-        for trace_dir in trace_directories:
-            if os.path.exists(trace_dir):
-                for file_path in Path(trace_dir).glob("*"):
-                    if file_path.is_file() and not file_path.name.startswith('.'):
-                        # Skip very large files (>100KB for demo purposes)
-                        if file_path.stat().st_size < 100000:
-                            source_name = Path(trace_dir).name
-                            available_traces.append({
-                                'path': file_path,
-                                'source': source_name,
-                                'filename': file_path.name
-                            })
+        # Randomly select one of the 5 samples
+        selected_sample = random.choice(st.session_state.mad_dataset)
         
-        if not available_traces:
-            # Fallback to sample traces
-            return get_fallback_demo_trace()
+        # Format the trace content
+        trace_content = selected_sample['trace']
+        if isinstance(trace_content, list):
+            trace_content = '\n'.join(str(item) for item in trace_content)
+        elif not isinstance(trace_content, str):
+            trace_content = str(trace_content)
         
-        # Select a random trace
-        selected_trace = random.choice(available_traces)
+        # Store the annotation for later use
+        st.session_state.current_annotation = selected_sample['mast_annotation']
         
-        # Read the trace content
-        try:
-            with open(selected_trace['path'], 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-                
-            # Truncate if too long for demo purposes
-            if len(content) > 2000:
-                content = content[:2000] + "..."
-                
-            return {
-                'content': content,
-                'filename': selected_trace['filename'],
-                'source': selected_trace['source']
-            }
-        except Exception as e:
-            st.error(f"Error reading trace file: {e}")
-            return get_fallback_demo_trace()
+        return {
+            'content': trace_content,
+            'filename': f"{selected_sample['mas_name']}_{selected_sample['benchmark_name']}_{selected_sample['trace_id']}.txt",
+            'source': f"{selected_sample['mas_name']} on {selected_sample['benchmark_name']}",
+            'llm_name': selected_sample['llm_name'],
+            'precomputed_annotation': selected_sample['mast_annotation']
+        }
             
     except Exception as e:
-        st.error(f"Error loading demo trace: {e}")
+        st.error(f"Error loading demo trace from Hugging Face: {e}")
         return get_fallback_demo_trace()
 
 
@@ -521,6 +529,8 @@ def main():
                     st.session_state.demo_text = demo_data['content']
                     st.session_state.demo_filename = demo_data['filename']
                     st.session_state.demo_source = demo_data['source']
+                    st.session_state.demo_precomputed_annotation = demo_data.get('precomputed_annotation')
+                    st.session_state.demo_llm_name = demo_data.get('llm_name', 'Unknown')
                     st.rerun()
         
         # Show loaded demo trace
@@ -543,9 +553,14 @@ def main():
             if hasattr(st.session_state, 'demo_source'):
                 st.caption(f"🔗 Source: {st.session_state.demo_source}")
             
+            if hasattr(st.session_state, 'demo_precomputed_annotation'):
+                st.info("📌 This demo uses precomputed annotations from the MAD dataset")
+            
             if st.button("🚀 Analyze Demo Trace", type="primary", key="demo_annotate", use_container_width=True):
                 with st.spinner("🔍 Analyzing demo trace..."):
-                    result = annotate_text(st.session_state.demo_text, st.session_state.demo_filename)
+                    # Use precomputed annotation if available
+                    precomputed = st.session_state.get('demo_precomputed_annotation')
+                    result = annotate_text(st.session_state.demo_text, st.session_state.demo_filename, precomputed_annotation=precomputed)
                 
                 if result:
                     st.session_state.annotation_result = result

@@ -267,9 +267,31 @@ def create_dashboard():
                 for mode_id, detected in result.get('failure_modes', {}).items():
                     formatted_result['distribution']['percents'][mode_id] = 100.0 if detected else 0.0
                 
-                # Fixed figure size at 2000px width (same as main app)
-                figure_width = 2000
-                figure_height = int(figure_width * 0.6)  # 3:5 ratio = 0.6 for better text layout
+                # Configure matplotlib for maximum crispness BEFORE creating figure
+                import matplotlib
+                matplotlib.use('Agg')  # Use Anti-Grain Geometry backend for better rendering
+                matplotlib.rcParams['figure.dpi'] = 300
+                matplotlib.rcParams['savefig.dpi'] = 300
+                matplotlib.rcParams['font.family'] = ['Helvetica Neue', 'Arial', 'DejaVu Sans', 'sans-serif']
+                matplotlib.rcParams['font.size'] = 14  # Increased base font size
+                matplotlib.rcParams['font.weight'] = 'normal'
+                matplotlib.rcParams['axes.linewidth'] = 1.0  # Cleaner line weight
+                matplotlib.rcParams['lines.linewidth'] = 1.2  # Slightly thinner lines
+                matplotlib.rcParams['patch.linewidth'] = 1.0
+                matplotlib.rcParams['text.antialiased'] = True
+                matplotlib.rcParams['path.simplify'] = False  # Disable path simplification for crisp paths
+                matplotlib.rcParams['agg.path.chunksize'] = 0  # Disable chunking for better quality
+                matplotlib.rcParams['figure.facecolor'] = 'white'
+                matplotlib.rcParams['axes.facecolor'] = 'white'
+                matplotlib.rcParams['savefig.facecolor'] = 'white'
+                matplotlib.rcParams['savefig.edgecolor'] = 'none'
+                matplotlib.rcParams['savefig.transparent'] = False
+                matplotlib.rcParams['text.hinting'] = 'auto'  # Better text hinting
+                matplotlib.rcParams['text.hinting_factor'] = 8  # Improved text clarity
+                
+                # Use even larger dimensions for maximum crispness
+                figure_width = 3200  # Extra large for crisp text
+                figure_height = 2000  # Optimal aspect ratio
                 
                 mast_fig = render_mast_taxonomy(
                     annotation_result=formatted_result,
@@ -278,13 +300,37 @@ def create_dashboard():
                     show_zero_modes=show_zero_modes
                 )
                 
-                # Display figure
+                # Display figure with high quality
                 st.pyplot(mast_fig, use_container_width=True)
                 
-                # Add download button
+                # Clean up any temporary images that might have been created
+                import glob
+                temp_images = glob.glob("*.png") + glob.glob("mast_*.png") + glob.glob("test_*.png")
+                for temp_img in temp_images:
+                    try:
+                        os.remove(temp_img)
+                    except:
+                        pass
+                
+                # Add download button with maximum quality settings
                 import io
                 buf = io.BytesIO()
-                mast_fig.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+                mast_fig.savefig(
+                    buf, 
+                    format='png', 
+                    dpi=300,                    # Maximum DPI for crisp output
+                    bbox_inches='tight',       # Remove excess whitespace
+                    facecolor='white',         # Clean white background
+                    edgecolor='none',          # No edge color
+                    pad_inches=0.05,           # Minimal padding for tighter crop
+                    transparent=False,         # Ensure solid white background
+                    pil_kwargs={               # Enhanced PNG quality settings
+                        'optimize': True, 
+                        'quality': 100,
+                        'compress_level': 1,   # Best compression quality
+                        'icc_profile': None    # Remove ICC profile for smaller file
+                    }
+                )
                 buf.seek(0)
                 
                 st.download_button(
