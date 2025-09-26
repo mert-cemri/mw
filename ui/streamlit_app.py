@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -70,15 +71,45 @@ def annotate_text(text: str, filename: str = "pasted_trace.txt", precomputed_ann
     try:
         # If we have a precomputed annotation, use it directly
         if precomputed_annotation is not None:
+            # Count the steps in the text
+            n_steps = len(text.splitlines())
+            
+            # Convert failure_modes dict to distribution format
+            counts = {}
+            for mode_code, detected in precomputed_annotation.items():
+                counts[mode_code] = 1 if detected else 0
+            
+            # Calculate category counts
+            categories = {}
+            from app.mast_figure.taxonomy import TAXONOMY_SPEC
+            for mode in TAXONOMY_SPEC.modes:
+                if mode.code in counts and counts[mode.code] > 0:
+                    cat_id = mode.category_id
+                    categories[cat_id] = categories.get(cat_id, 0) + counts[mode.code]
+            
+            # Calculate percentages
+            total = sum(counts.values())
+            percents = {}
+            for mode_code, count in counts.items():
+                percents[mode_code] = (count / total * 100) if total > 0 else 0.0
+            
             # Format the response to match what the API would return
             return {
                 "job_id": "precomputed_demo",
                 "status": "completed",
+                "distribution": {
+                    "counts": counts,
+                    "percents": percents,
+                    "categories": categories
+                },
+                "n_traces": 1,
+                "n_total_steps": n_steps,
                 "result": {
                     "failure_modes": precomputed_annotation,
                     "summary": f"Precomputed annotation from MAD dataset for {filename}",
                     "trace_files": [filename]
-                }
+                },
+                "created_at": datetime.now().isoformat() + "Z"
             }
         
         # Otherwise, send to API for real annotation
