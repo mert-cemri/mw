@@ -108,6 +108,7 @@ def annotate_text(text: str, filename: str = "pasted_trace.txt", precomputed_ann
                 },
                 "n_traces": 1,
                 "n_total_steps": n_steps,
+                "trace_summaries": [],  # Empty for precomputed annotations
                 "result": {
                     "failure_modes": precomputed_annotation,
                     "summary": f"Precomputed annotation from MAD dataset for {filename}",
@@ -149,8 +150,8 @@ def get_random_demo_trace() -> Optional[Dict]:
             df = pd.DataFrame(data)
             
             # Select 5 specific samples with diverse characteristics
-            # Using indices: 42, 156, 378, 521, 890
-            selected_indices = [42, 156, 378, 521, 890]
+            # Using indices: 45, 500, 950, 521, 1040
+            selected_indices = [45, 500, 950, 521, 1040]
             selected_samples = df.iloc[selected_indices].to_dict('records')
             
             st.session_state.mad_dataset = selected_samples
@@ -814,7 +815,7 @@ You can paste:
         
         with col2:
             # Trace summary CSV
-            if result["trace_summaries"]:
+            if result.get("trace_summaries"):
                 summary_csv = create_trace_summary_csv(result)
                 st.download_button(
                     label="📄 Download Trace Summary CSV",
