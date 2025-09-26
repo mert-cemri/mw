@@ -82,10 +82,14 @@ def annotate_text(text: str, filename: str = "pasted_trace.txt", precomputed_ann
             # Calculate category counts
             categories = {}
             from app.mast_figure.taxonomy import TAXONOMY_SPEC
-            for mode in TAXONOMY_SPEC.modes:
-                if mode.code in counts and counts[mode.code] > 0:
-                    cat_id = mode.category_id
-                    categories[cat_id] = categories.get(cat_id, 0) + counts[mode.code]
+            # TAXONOMY_SPEC is a dict with "categories" key
+            for category in TAXONOMY_SPEC["categories"]:
+                cat_count = 0
+                for mode in category.modes:
+                    if mode.code in counts and counts[mode.code] > 0:
+                        cat_count += counts[mode.code]
+                if cat_count > 0:
+                    categories[category.id] = cat_count
             
             # Calculate percentages
             total = sum(counts.values())
